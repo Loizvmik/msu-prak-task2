@@ -1,0 +1,154 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="using:TspDistributed.App"
+        x:Class="TspDistributed.App.MainWindow"
+        Title="Коммивояжёр: распределённый генетический алгоритм"
+        Width="1360" Height="860" MinWidth="1000" MinHeight="640"
+        WindowStartupLocation="CenterScreen">
+  <Grid ColumnDefinitions="350,*">
+
+        <Border Grid.Column="0" Background="#F2F2EE" BorderBrush="#DDDDD8" BorderThickness="0,0,1,0">
+      <Grid RowDefinitions="*,Auto">
+      <ScrollViewer>
+        <StackPanel Margin="16,4,16,16">
+
+          <TextBlock Classes="header" Text="Вычислительные сервисы" />
+          <TextBlock Text="IP-адрес и порт, по одному на строку" FontSize="12" Foreground="#666" />
+          <TextBox x:Name="ServicesBox" Height="76" AcceptsReturn="True"
+                   Text="127.0.0.1:5101&#10;127.0.0.1:5102" />
+          <Grid ColumnDefinitions="*,140" RowDefinitions="Auto,Auto">
+            <TextBlock Classes="label" Text="Поколений в блоке" />
+            <NumericUpDown x:Name="BatchGenerationsBox" Grid.Column="1" Minimum="1" Maximum="1000"
+                           Value="50" Increment="10" FormatString="0" />
+            <TextBlock Grid.Row="1" Classes="label" Text="Таймаут, секунд" />
+            <NumericUpDown x:Name="TimeoutBox" Grid.Row="1" Grid.Column="1" Minimum="1" Maximum="300"
+                           Value="10" Increment="1" FormatString="0" />
+          </Grid>
+          <TextBlock x:Name="ServiceStatusText" Text="Сервисы ещё не запущены." TextWrapping="Wrap"
+                     FontSize="12" Margin="0,6,0,0" />
+
+          <TextBlock Classes="header" Text="Города" />
+          <Grid ColumnDefinitions="*,140" RowDefinitions="Auto,Auto">
+            <TextBlock Classes="label" Text="Число городов" />
+            <NumericUpDown x:Name="CityCountBox" Grid.Column="1" Minimum="3" Maximum="512" Increment="1"
+                           Value="6" FormatString="0" />
+            <TextBlock Grid.Row="1" Classes="label" Text="Сид городов" />
+            <TextBox x:Name="CitySeedBox" Grid.Row="1" Grid.Column="1" Margin="0,2" Watermark="случайно" />
+          </Grid>
+          <Grid ColumnDefinitions="*,8,*" Margin="0,6,0,0">
+            <Button x:Name="GenerateButton" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                    Content="Сгенерировать" Click="OnGenerateClick" />
+            <Button x:Name="GermanyButton" Grid.Column="2" HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center" Content="Германия, 14" Click="OnGermanyClick" />
+          </Grid>
+
+          <TextBlock Classes="header" Text="Матрица расстояний" />
+          <TextBlock TextWrapping="Wrap" Foreground="#666" FontSize="12"
+                     Text="Строка на город, числа через пробел. Можно отредактировать или вставить свою матрицу." />
+          <TextBox x:Name="MatrixBox" Height="170" Margin="0,6,0,0" AcceptsReturn="True" TextWrapping="NoWrap"
+                   FontFamily="Menlo, Consolas, DejaVu Sans Mono, monospace" FontSize="11" />
+          <Button x:Name="ApplyMatrixButton" Margin="0,6,0,0" HorizontalAlignment="Stretch"
+                  HorizontalContentAlignment="Center" Content="Применить матрицу" Click="OnApplyMatrixClick" />
+          <TextBlock x:Name="MatrixStatus" Margin="0,4,0,0" TextWrapping="Wrap" FontSize="12" />
+
+          <TextBlock Classes="header" Text="Генетический алгоритм" />
+          <Grid ColumnDefinitions="*,140" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+            <TextBlock Classes="label" Text="Размер популяции" />
+            <NumericUpDown x:Name="PopulationBox" Grid.Column="1" Minimum="2" Maximum="10000" Increment="50"
+                           Value="300" FormatString="0" />
+
+            <TextBlock Grid.Row="1" Classes="label" Text="Элита" />
+            <NumericUpDown x:Name="EliteBox" Grid.Row="1" Grid.Column="1" Minimum="0" Maximum="10000"
+                           Increment="1" Value="4" FormatString="0" />
+
+            <TextBlock Grid.Row="2" Classes="label" Text="Размер турнира" />
+            <NumericUpDown x:Name="TournamentBox" Grid.Row="2" Grid.Column="1" Minimum="1" Maximum="10000"
+                           Increment="1" Value="4" FormatString="0" />
+
+            <TextBlock Grid.Row="3" Classes="label" Text="P скрещивания" />
+            <NumericUpDown x:Name="CrossoverBox" Grid.Row="3" Grid.Column="1" Minimum="0" Maximum="1"
+                           Increment="0.05" Value="0.9" FormatString="0.00" />
+
+            <TextBlock Grid.Row="4" Classes="label" Text="P мутации" />
+            <NumericUpDown x:Name="MutationBox" Grid.Row="4" Grid.Column="1" Minimum="0" Maximum="1"
+                           Increment="0.05" Value="0.3" FormatString="0.00" />
+
+            <TextBlock Grid.Row="5" Classes="label" Text="Доля инверсий" />
+            <NumericUpDown x:Name="InversionBox" Grid.Row="5" Grid.Column="1" Minimum="0" Maximum="1"
+                           Increment="0.1" Value="0.5" FormatString="0.00"
+                           ToolTip.Tip="Доля мутаций, которые разворачивают отрезок маршрута вместо обмена двух городов. 0 = только обмен, как в постановке задачи." />
+
+            <TextBlock Grid.Row="6" Classes="label" Text="Потоков на сервисе" />
+            <NumericUpDown x:Name="ThreadsBox" Grid.Row="6" Grid.Column="1" Minimum="0" Maximum="256"
+                           Increment="1" Value="0" FormatString="0" />
+
+            <TextBlock Grid.Row="7" Classes="label" Text="Поколений (0 = ∞)" />
+            <NumericUpDown x:Name="MaxGenerationsBox" Grid.Row="7" Grid.Column="1" Minimum="0" Maximum="100000000"
+                           Increment="100" Value="0" FormatString="0" />
+
+            <TextBlock Grid.Row="8" Classes="label" Text="Сид ГА" />
+            <TextBox x:Name="GaSeedBox" Grid.Row="8" Grid.Column="1" Margin="0,2" Watermark="случайно" />
+
+            <TextBlock Grid.Row="9" Classes="label" Text="Точек на графике" />
+            <NumericUpDown x:Name="ChartWindowBox" Grid.Row="9" Grid.Column="1" Minimum="2" Maximum="5000"
+                           Increment="50" Value="200" FormatString="0" />
+          </Grid>
+
+        </StackPanel>
+      </ScrollViewer>
+      <StackPanel Grid.Row="1" Margin="16,0,16,16">
+          <Grid ColumnDefinitions="*,8,*" Margin="0,14,0,0">
+            <Button x:Name="StartButton" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                    Classes="accent" Content="Старт" Click="OnStartClick" />
+            <Button x:Name="StopButton" Grid.Column="2" HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center" Content="Стоп" IsEnabled="False" Click="OnStopClick" />
+          </Grid>
+          <TextBlock x:Name="ErrorText" Margin="0,8,0,0" Foreground="#C0392B" TextWrapping="Wrap" />
+      </StackPanel>
+      </Grid>
+    </Border>
+
+        <Grid Grid.Column="1" Margin="16" RowDefinitions="Auto,*,Auto,260" ColumnDefinitions="*,16,*">
+      <Border Grid.ColumnSpan="3" Background="#EEF3F9" CornerRadius="6" Padding="14,10">
+        <WrapPanel>
+          <StackPanel Margin="0,0,36,0">
+            <TextBlock Text="Состояние" FontSize="12" Foreground="#666" />
+            <TextBlock x:Name="StateText" Text="не запущен" FontSize="18" FontWeight="SemiBold" />
+          </StackPanel>
+          <StackPanel Margin="0,0,36,0">
+            <TextBlock Text="Поколение" FontSize="12" Foreground="#666" />
+            <TextBlock x:Name="GenerationText" Text="—" FontSize="18" FontWeight="SemiBold" />
+          </StackPanel>
+          <StackPanel Margin="0,0,36,0">
+            <TextBlock Text="Лучшая длина маршрута" FontSize="12" Foreground="#666" />
+            <TextBlock x:Name="BestText" Text="—" FontSize="18" FontWeight="SemiBold" Foreground="#2F6FB3" />
+          </StackPanel>
+          <StackPanel Margin="0,0,36,0">
+            <TextBlock Text="Средняя по островам" FontSize="12" Foreground="#666" />
+            <TextBlock x:Name="AverageText" Text="—" FontSize="18" FontWeight="SemiBold" />
+          </StackPanel>
+          <StackPanel>
+            <TextBlock Text="Скорость" FontSize="12" Foreground="#666" />
+            <TextBlock x:Name="SpeedText" Text="—" FontSize="18" FontWeight="SemiBold" />
+          </StackPanel>
+        </WrapPanel>
+      </Border>
+
+      <Border Grid.Row="1" Margin="0,12,0,0" BorderBrush="#DDDDD8" BorderThickness="1" CornerRadius="6"
+              ClipToBounds="True">
+        <local:RouteView x:Name="RouteCanvas" />
+      </Border>
+      <Border Grid.Row="1" Grid.Column="2" Margin="0,12,0,0" BorderBrush="#DDDDD8" BorderThickness="1"
+              CornerRadius="6" ClipToBounds="True">
+        <local:ChartView x:Name="Chart" />
+      </Border>
+
+      <TextBlock Grid.Row="2" Grid.ColumnSpan="3" Classes="header" Text="Лучший маршрут: порядок обхода и расстояния" />
+      <Border Grid.Row="3" Grid.ColumnSpan="3" BorderBrush="#DDDDD8" BorderThickness="1" CornerRadius="6">
+        <TextBox x:Name="RouteText" IsReadOnly="True" AcceptsReturn="True" BorderThickness="0"
+                 FontFamily="Menlo, Consolas, DejaVu Sans Mono, monospace" FontSize="12"
+                 Text="Маршрут появится после запуска поиска." />
+      </Border>
+    </Grid>
+  </Grid>
+</Window>
